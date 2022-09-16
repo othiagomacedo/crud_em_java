@@ -1,0 +1,1 @@
+create table crud ( id serial primary key, nome text , telefone text , endereco text );

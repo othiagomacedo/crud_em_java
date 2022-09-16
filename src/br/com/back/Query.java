@@ -22,88 +22,57 @@ public class Query {
     String nome = "";
     String end = "";
     String num = "";
-    String connectionUrl = "";
+    String url = "jdbc:postgresql://localhost:4002/aluguel_de_carro";
+    String usuario = "postgres";
+    String senha = "password";
     
     ResultSet resultSet = null;
+    Connection con = null;
     
     Tela tela = new Tela();
     
     public Query() {
+          
+    } 
+    
+    public void create() throws Exception{
+        String querySQL = "CREATE TABLE crud ( id serial primary key, nome text , telefone text , endereco text );";
+        con = DriverManager.getConnection(url, usuario, senha);
+        Statement stm = con.createStatement();
+        stm.executeUpdate(querySQL); 
+    }
+    
+    public void Inserir(String nome, String end, String num) throws Exception{        
+        String querySQL = "INSERT INTO crud (id,nome,telefone,endereco) values (default, '"+nome+"', '"+num+"', '"+end+"')";
+        con = DriverManager.getConnection(url, usuario, senha);
+        Statement stm = con.createStatement();
+        stm.executeUpdate(querySQL);  
+        JOptionPane.showMessageDialog(null, "Dados inseridos com Sucesso!");
+    }
+    
+    public String Consultar() throws Exception{
+        String querySQL = "SELECT * FROM crud";
+        String saida = "*** CLIENTES CADASTRADOS ***\n-------------------------------------------------\n";
+        
+        con = DriverManager.getConnection(url, usuario, senha);
+        Statement stm = con.createStatement();
+        ResultSet rs = stm.executeQuery(querySQL);
+        while(rs.next()){
+            saida += rs.getInt("id") + " - " + rs.getString("nome") + " - " + rs.getString("telefone") +  " - " + rs.getString("endereco") + "\n"; 
+        }
+        return saida;
+    }
+    
+    public void Alterar(){
         
     }
     
-    public Query(String nome, String end, String num){
-        this.nome = nome;
-        this.end = end;
-        this.num = num;
+    public void Excluir(String nome)throws Exception{
+        String querySQL = "DELETE FROM crud WHERE nome ='"+nome+"';";
+        con = DriverManager.getConnection(url, usuario, senha);
+        Statement stm = con.createStatement();
+        stm.executeUpdate(querySQL);  
+        JOptionPane.showMessageDialog(null, "o Cliente "+nome+" foi excluído com sucesso!");
     }
-    
-    public void connectarBD(){
-        //conectando ao banco!
-        setConnectionUrl(
-                  "jdbc:postgresql://localhost:4002/aluguel_de_carro;"
-                + "database=aluguel_de_carro;"
-                + "user=postgres;"
-                + "password=positivo;"
-                + "encrypt=true;"
-                + "trustServerCertificate=false;"
-                + "loginTimeout=10;");
-
-        try ( Connection connection = DriverManager.getConnection(getConnectionUrl());) {
-            System.out.println("\nCONEXÃO AO BANCO REALIZADA COM SUCESSO!\n");
-        } // Handle any errors that may have occurred.
-        catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, e);
-        }
-    }
-    
-    public void consulta(){
-        connectarBD();
-        String selectSql = "SELECT * FROM testes";
-        
-        try (Connection connection = DriverManager.getConnection(getConnectionUrl());
-                Statement statement = connection.createStatement();) {
-
-            // Create and execute a SELECT SQL statement.
-            resultSet = statement.executeQuery(selectSql);
-
-            // Print results from select statement
-            String resultado = "";
-            int contQuery = 0;
-            while (resultSet.next()) {
-                resultado += resultSet.getString(contQuery) + "\n  ";
-                //resultSet.getString(2) + " " + resultSet.getString(3));
-                contQuery += 1;
-            }
-            
-            tela.setSaida(resultado);
-        }
-        catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, e);
-        }
-    }
-    
-    //GETTERS
-    public String getNome() {
-        return nome;
-    }
-
-    public String getEnd() {
-        return end;
-    }
-
-    public String getNum() {
-        return num;
-    }
-
-    public String getConnectionUrl() {
-        return connectionUrl;
-    }
-
-    public void setConnectionUrl(String connectionUrl) {
-        this.connectionUrl = connectionUrl;
-    }
-    
-    
-    
+  
 }

@@ -5,6 +5,13 @@
 package br.com.front;
 
 import br.com.back.Query;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -16,14 +23,20 @@ public class Tela extends javax.swing.JFrame {
     String end = "";
     String num = "";
     String saida = "";
+    String url = "jdbc:postgresql://localhost:4002/aluguel_de_carro";
+    String usuario = "postgres";
+    String senha = "password";
     
     Query q = null;
+    Connection con = null;
     
     /**
      * Creates new form tela
      */
     public Tela() {
         initComponents();
+        this.setLocationRelativeTo(null);
+        
     }    
     /**
      * This method is called from within the constructor to initialize the form.
@@ -47,7 +60,6 @@ public class Tela extends javax.swing.JFrame {
         btnAlterar1 = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         cpSaida = new javax.swing.JTextArea();
-        btnConect = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -123,26 +135,17 @@ public class Tela extends javax.swing.JFrame {
         cpSaida.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         jScrollPane1.setViewportView(cpSaida);
 
-        btnConect.setBackground(new java.awt.Color(0, 204, 0));
-        btnConect.setForeground(new java.awt.Color(0, 0, 0));
-        btnConect.setText("CONECTAR AO SERVER");
-        btnConect.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnConectActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(17, 17, 17)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGap(30, 30, 30)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                         .addGroup(jPanel1Layout.createSequentialGroup()
                             .addComponent(jLabel3)
-                            .addGap(36, 36, 36)
+                            .addGap(18, 18, 18)
                             .addComponent(cpEnd))
                         .addGroup(jPanel1Layout.createSequentialGroup()
                             .addComponent(jLabel1)
@@ -156,15 +159,12 @@ public class Tela extends javax.swing.JFrame {
                         .addComponent(btnInsert, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(btnConsulta, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(33, 33, 33)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(btnAlterar, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(34, 34, 34)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(btnAlterar1, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 498, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(6, 6, 6)
-                        .addComponent(btnConect, javax.swing.GroupLayout.PREFERRED_SIZE, 197, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(22, Short.MAX_VALUE))
+                    .addComponent(jScrollPane1))
+                .addContainerGap(30, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -187,9 +187,7 @@ public class Tela extends javax.swing.JFrame {
                     .addComponent(btnAlterar1, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 246, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(btnConect)
-                .addContainerGap(25, Short.MAX_VALUE))
+                .addContainerGap(59, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -205,8 +203,37 @@ public class Tela extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-       
+    
+    public void setInserirTela(String res){
+        cpSaida.setText(res);
+    }
+    
+    public void limparTela(){
+        cpNome.setText("");
+        cpEnd.setText("");
+        cpTel.setText("");
+    }
+    
+    //FUNCÃO QUE VAI APONTAR QUAL QUERY SERÁ EXECUTADA
+    public void executQ(int query){
+        q = new Query();
+        nome = cpNome.getText();
+        end = cpEnd.getText();
+        num = cpTel.getText();
+        
+        try {
+            switch (query) {
+            case 1: q.Inserir(nome, end, num); break;
+            case 2: setInserirTela(q.Consultar()); break;
+            case 4: q.Excluir(nome); break;
+            }
+        }
+        catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e);
+        }
+        
+        limparTela();
+    }   
     
     private void cpNomeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cpNomeActionPerformed
         // TODO add your handling code here:
@@ -221,13 +248,8 @@ public class Tela extends javax.swing.JFrame {
     }//GEN-LAST:event_cpEndActionPerformed
 
     private void btnConsultaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConsultaActionPerformed
-        nome = cpNome.getText();
-        end = cpEnd.getText();
-        num = cpTel.getText();
-        
-        q = new Query(nome,end,num);
-        q.consulta();
-        cpSaida.setText(getSaida());
+        executQ(2);     
+       
     }//GEN-LAST:event_btnConsultaActionPerformed
 
     private void btnAlterarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAlterarActionPerformed
@@ -235,21 +257,12 @@ public class Tela extends javax.swing.JFrame {
     }//GEN-LAST:event_btnAlterarActionPerformed
 
     private void btnAlterar1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAlterar1ActionPerformed
-        // TODO add your handling code here:
+        executQ(4);
     }//GEN-LAST:event_btnAlterar1ActionPerformed
 
     private void btnInsertActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnInsertActionPerformed
-        nome = cpNome.getText();
-        end = cpEnd.getText();
-        num = cpTel.getText();
-        q = new Query(nome,end,num);
-        
+        executQ(1);        
     }//GEN-LAST:event_btnInsertActionPerformed
-
-    private void btnConectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConectActionPerformed
-        q = new Query();
-        q.connectarBD();
-    }//GEN-LAST:event_btnConectActionPerformed
 
     public String getSaida() {
         return saida;
@@ -300,7 +313,6 @@ public class Tela extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAlterar;
     private javax.swing.JButton btnAlterar1;
-    private javax.swing.JButton btnConect;
     private javax.swing.JButton btnConsulta;
     private javax.swing.JButton btnInsert;
     private javax.swing.JTextField cpEnd;
